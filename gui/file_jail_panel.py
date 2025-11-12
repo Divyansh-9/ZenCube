@@ -65,7 +65,7 @@ def subprocess_run(cmd: list[str]):
 
 class _JailRunWorker(QThread):
     output = Signal(str)
-    finished = Signal(int, Optional[str])
+    finished = Signal(int, object)
     failed = Signal(str)
 
     def __init__(self, command: list[str], parent: Optional[QWidget] = None) -> None:
@@ -337,7 +337,7 @@ class FileJailPanel(QWidget):
     def _find_latest_log(self) -> Optional[Path]:
         if not LOG_DIR.exists():
             return None
-        logs = sorted(LOG_DIR.glob("gui_run_*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+        logs = sorted(LOG_DIR.glob("jail_run_*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
         return logs[0] if logs else None
 
     def _summarise_log(self, log_path: str) -> Optional[str]:

@@ -2,7 +2,7 @@
 
 ## Task Tracking
 - [x] File System Restriction (dev-safe) — ✅ Completed by GitHub Copilot 2025-11-12 03:48 UTC (chroot flag + dev wrapper + tests)
-- [~] GUI – File Restriction Panel (Python GUI) — 🔄 In-Progress (started by GitHub Copilot 2025-11-12 12:01 UTC)
+- [x] GUI – File Restriction Panel (Python GUI) — ✅ Done (score: 9/10) — commit: e5eac53
 
 ## Filesystem Isolation Goals
 - [x] Implement chroot() jail for sandboxed processes
