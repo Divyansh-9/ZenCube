@@ -1,10 +1,11 @@
 # Phase 3 Master Checklist
 
 ## Task Tracking
-- [~] File System Restriction (dev-safe) — 🔄 In-Progress (started by GitHub Copilot 2025-11-12 10:30 UTC)
+- [x] File System Restriction (dev-safe) — ✅ Completed by GitHub Copilot 2025-11-12 03:48 UTC (chroot flag + dev wrapper + tests)
+- [~] GUI – File Restriction Panel — 🔄 In-Progress (started by GitHub Copilot 2025-11-12 11:46 UTC)
 
 ## Filesystem Isolation Goals
-- [ ] Implement chroot() jail for sandboxed processes
+- [x] Implement chroot() jail for sandboxed processes
 - [ ] Provide read-only filesystem mount support
 - [ ] Configure mount namespaces via unshare(CLONE_NEWNS)
 - [ ] Isolate temporary directories (per-sandbox /tmp)

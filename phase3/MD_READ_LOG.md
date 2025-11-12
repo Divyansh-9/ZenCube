@@ -22,3 +22,14 @@
 - [2025-11-12 10:20 UTC] READ: zencube/PHASE2_COMPLETE.md — # ZenCube Phase 2 - Completion Summary
 - [2025-11-12 10:21 UTC] READ: zencube/TEST_RESULTS.md — # ZenCube Test Results Summary
 - [2025-11-12 10:22 UTC] READ: zencube/TESTING_CHECKLIST.md — # ZenCube Testing Checklist
+- [2025-11-12 11:30 UTC] READ: README.md — Project summary covering sandbox features, GUIs, docs, and roadmap.
+- [2025-11-12 11:32 UTC] READ: docs/README.md — Index of team documentation outlining roles, preparation guides, and presentation flow.
+- [2025-11-12 11:34 UTC] READ: docs/PROJECT_OVERVIEW.md — System-wide architecture overview covering sandbox layers, flows, and roadmap items.
+- [2025-11-12 11:36 UTC] READ: docs/ROLE_2_GUI_FRONTEND.md — Detailed breakdown of PySide6 GUI architecture, components, threading, and demo guidance.
+- [2025-11-12 11:38 UTC] READ: docs/ROLE_3_INTEGRATION.md — Integration bridge details covering command assembly, threading, WSL handling, and process lifecycle.
+- [2025-11-12 11:40 UTC] READ: phase3/FINAL_REPORT.md — Backend jail summary: chroot flag, wrapper, scripts, validation notes.
+- [2025-11-12 11:41 UTC] READ: phase3/NOTES.md — Dev-safe jail notes on wrapper behavior, allowlist, and pending follow-ups.
+- [2025-11-12 11:42 UTC] READ: phase3/PHASE3_MASTER_CHECKLIST.md — Checklist showing completed File Restriction and remaining hardening items.
+- [2025-11-12 11:43 UTC] READ: phase3/SCORES.md — Score table logging File System Restriction task outcome.
+- [2025-11-12 11:44 UTC] READ: phase3/TEST_RUNS.md — Test run log capturing dev wrapper validation pass details.
+- [2025-11-12 11:45 UTC] READ: .github/copilot-instructions.md — (empty file)
