@@ -1,7 +1,7 @@
 # Phase 3 Master Checklist
 
 ## Task Tracking
-- [ ] File System Restriction (dev-safe) — ⬜ Pending
+- [~] File System Restriction (dev-safe) — 🔄 In-Progress (started by GitHub Copilot 2025-11-12 10:30 UTC)
 
 ## Filesystem Isolation Goals
 - [ ] Implement chroot() jail for sandboxed processes
