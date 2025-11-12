@@ -1,0 +1,17 @@
+# Generated artifacts and caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+
+# Local jail outputs and logs
+monitor/logs/
+sandbox_jail/
+sandbox_jail_py_gui/
+
+# Misc
+*.log

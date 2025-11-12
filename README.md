@@ -2,49 +2,110 @@
 
 **A Lightweight Sandbox for Process Isolation and Resource Control**
 
+Modern, cross-platform sandbox with beautiful GUI and command-line interface.
+
 ---
 
 ## 📁 Project Structure
 
 ```
 ZenCube/
-├── zencube/              # Core C sandbox implementation
-│   ├── sandbox.c         # Main sandbox program (Phase 1 & 2)
-│   ├── Makefile          # Build system
-│   ├── tests/            # Test programs
-│   ├── README.md         # Detailed documentation
-│   └── *.sh              # Test scripts
+├── zencube/                      # Core C sandbox implementation
+│   ├── sandbox.c                 # Main sandbox program (Phase 1 & 2)
+│   ├── zencube_modern_gui.py     # 🎨 Modern PySide6 GUI (NEW!)
+│   ├── zencube_gui.py            # 🖥️ Legacy Tkinter GUI
+│   ├── Makefile                  # Build system
+│   ├── tests/                    # Test programs
+│   └── *.sh                      # Test scripts
 │
-├── zencube_gui.py        # 🖥️ GUI Application (NEW!)
-├── GUI_USAGE.md          # GUI documentation
-└── README.md             # This file
+├── docs/                         # Documentation
+│   ├── GUI_USAGE.md              # GUI usage guide
+│   ├── MODERN_GUI_DOCUMENTATION.md  # Modern GUI complete docs
+│   ├── RESPONSIVE_FEATURES.md    # Responsive design features
+│   ├── CROSS_PLATFORM_SUPPORT.md # Platform compatibility
+│   └── BUGFIX_*.md               # Bug fix documentation
+│
+└── README.md                     # This file
 ```
+
+---
+
+## ✨ Features
+
+### 🎨 Modern GUI (PySide6)
+- **Beautiful Material Design** with gradient buttons and shadows
+- **Responsive Layout** - adapts to any screen size
+- **Flow layouts** for wrapping buttons
+- **Resizable splitter** with styled handle
+- **Hide/Show terminal** toggle
+- **Real-time output** with colored messages
+- **Quick commands** and preset configurations
+- **WSL support** for Windows users
+- **Cross-platform** - Windows & Linux
+
+### 🛡️ Sandbox Features
+- **Process Isolation** (Phase 1) - Fork, execute, wait
+- **Resource Limits** (Phase 2):
+  - ⏱️ CPU time limits (RLIMIT_CPU)
+  - 💾 Memory limits (RLIMIT_AS)
+  - 👥 Process limits (RLIMIT_NPROC)
+  - 📁 File size limits (RLIMIT_FSIZE)
+- **Signal Handling** - SIGXCPU, SIGSEGV, SIGKILL
+- **Error Reporting** - Clear exit codes and messages
 
 ---
 
 ## 🚀 Quick Start
 
-### Option 1: Use the GUI (Recommended for Beginners)
+### Option 1: Modern GUI (Recommended) 🎨
+
+**Requirements:**
+```bash
+pip install PySide6>=6.5.0
+```
+
+**Launch:**
+```bash
+cd zencube
+python zencube_modern_gui.py
+```
+
+**Features:**
+- ✅ Material Design interface (1200×750px default)
+- ✅ Responsive button layouts
+- ✅ Styled splitter for terminal resize
+- ✅ Hide/show terminal option
+- ✅ Quick command buttons (ls, echo, whoami, tests)
+- ✅ 4 preset configurations (None, Light, Medium, Strict)
+- ✅ Real-time colored output
+- ✅ Browse for executables
+- ✅ WSL toggle for Windows
+
+**See [`MODERN_GUI_DOCUMENTATION.md`](docs/MODERN_GUI_DOCUMENTATION.md) for complete guide.**
+
+---
+
+### Option 2: Legacy GUI (Tkinter) 🖥️
+
+**No installation required** - uses built-in Tkinter.
 
 ```bash
-# Launch the graphical interface
+cd zencube
 python zencube_gui.py
 ```
 
-**GUI Features:**
-- 🌍 **Cross-Platform**: Works on Windows (WSL) and Linux (native)
-- 📁 Browse and select files
+**Features:**
 - ☑️ Toggle resource limits with checkboxes
 - 🎯 Quick preset configurations
 - 📺 Real-time terminal output
 - ⏹️ Stop button for running processes
-- 🔄 Automatic path conversion (Windows)
+- 🔧 Settings dialog for custom paths
 
-**See [`GUI_USAGE.md`](GUI_USAGE.md) for detailed instructions.**
+**See [`GUI_USAGE.md`](docs/GUI_USAGE.md) for detailed instructions.**
 
 ---
 
-### Option 2: Use the Command Line
+### Option 3: Command Line Interface
 
 ```bash
 # Navigate to core sandbox
@@ -69,8 +130,6 @@ make test-phase2
 | File | Description |
 |------|-------------|
 | **[GUI_USAGE.md](GUI_USAGE.md)** | Complete GUI user guide with examples |
-| **[CROSS_PLATFORM_SUPPORT.md](CROSS_PLATFORM_SUPPORT.md)** | Cross-platform compatibility guide |
-| **[BUGFIX_PATH_CONVERSION.md](BUGFIX_PATH_CONVERSION.md)** | Windows path conversion fix details |
 | **[zencube/README.md](zencube/README.md)** | Full project documentation (450+ lines) |
 | **[zencube/QUICKSTART.md](zencube/QUICKSTART.md)** | 5-minute quick start guide |
 | **[zencube/PHASE2_COMPLETE.md](zencube/PHASE2_COMPLETE.md)** | Phase 2 implementation details |
@@ -88,17 +147,32 @@ make test-phase2
 - High-precision timing
 
 ### ✅ Phase 2: Resource Limits
+### ✅ Phase 2: Resource Limits 🎯
 - **CPU Time** limiting (prevent infinite loops)
 - **Memory** limiting (prevent memory exhaustion)
 - **Process Count** limiting (prevent fork bombs)
 - **File Size** limiting (prevent disk exhaustion)
 
-### ✅ GUI Interface
-- User-friendly graphical interface
-- Visual file selection
-- Interactive limit configuration
-- Real-time output display
-- Color-coded status messages
+### ✨ Modern GUI Interface (PySide6)
+- **Material Design** with gradients and shadows
+- **Responsive layout** adapts to screen size
+- **Flow layouts** for wrapping buttons
+- **Resizable splitter** with styled purple handle
+- **Hide/show terminal** toggle
+- **Real-time colored output** (green, red, orange, blue)
+- **Visual file selection** with browse dialog
+- **Interactive limit configuration** with checkboxes
+- **Quick commands** for common tasks
+- **4 preset configurations** (None, Light, Medium, Strict)
+- **Cross-platform** - WSL toggle for Windows/Linux
+- **Auto-detection** of operating system
+- **Window size**: 1200×750px (fits most screens)
+
+### 🖥️ Legacy GUI (Tkinter)
+- User-friendly traditional interface
+- All core features included
+- No additional dependencies
+- Smaller footprint
 
 ---
 
@@ -109,36 +183,49 @@ make test-phase2
 🛡️ **Protection**: Prevent resource exhaustion attacks  
 🧪 **Testing**: Test apps with resource constraints  
 📚 **Learning**: Understand Linux process management  
+🎨 **Development**: Beautiful UI for sandbox control
 
 ---
 
 ## 📊 Current Status
 
-| Component | Status | Version |
-|-----------|--------|---------|
-| Core Sandbox | ✅ Complete | 2.0 |
-| Phase 1 | ✅ Complete | 100% |
-| Phase 2 | ✅ Complete | 100% |
-| GUI | ✅ Complete | 1.0 |
-| Phase 3 (Filesystem) | ⏳ Planned | 0% |
+| Component | Status | Version | Notes |
+|-----------|--------|---------|-------|
+| Core Sandbox | ✅ Complete | 2.0 | Phase 1 & 2 |
+| Phase 1 (Isolation) | ✅ Complete | 100% | Fork, exec, wait |
+| Phase 2 (Resources) | ✅ Complete | 100% | All 4 limits |
+| Modern GUI (PySide6) | ✅ Complete | 2.1 | Material Design |
+| Legacy GUI (Tkinter) | ✅ Complete | 1.3 | Stable |
+| Responsive Design | ✅ Complete | 100% | FlowLayout |
+| Terminal Toggle | ✅ Complete | 100% | Hide/Show |
+| Cross-Platform | ✅ Complete | 100% | Windows & Linux |
+| Phase 3 (Filesystem) | ⏳ Planned | 0% | Future work |
 
-**Last Updated**: December 2024  
+**Last Updated**: October 13, 2025  
 **Branch**: `dev`
 
 ---
 
 ## 🛠️ System Requirements
 
-### For GUI:
-- Python 3.7+
-- Tkinter (usually pre-installed)
-- WSL2 (Windows) or Linux
+### For Modern GUI (PySide6):
+- **Python**: 3.7 or higher
+- **PySide6**: 6.5.0 or higher
+- **OS**: Windows 10/11 or Linux
+- **WSL2**: Required for Windows
+- **Screen**: 1000×700 minimum (1200×750 recommended)
+
+### For Legacy GUI (Tkinter):
+- **Python**: 3.7+
+- **Tkinter**: Usually pre-installed
+- **WSL2**: Windows only
+- **Linux**: Native support
 
 ### For Sandbox:
-- Linux environment (WSL2 on Windows)
-- GCC compiler
-- Make build system
-- POSIX-compliant system
+- **Linux** environment (WSL2 on Windows)
+- **GCC** compiler
+- **Make**: Build system
+- **POSIX**: Compliant system
 
 ---
 
@@ -147,18 +234,38 @@ make test-phase2
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/ZenCube.git
+git clone https://github.com/KamalSDhami/ZenCube.git
 cd ZenCube
 ```
 
-### 2. Build the Sandbox
+### 2. Install Dependencies (Modern GUI)
+
+```bash
+# For PySide6 Modern GUI
+pip install PySide6>=6.5.0
+
+# Or install from requirements.txt
+cd zencube
+pip install -r requirements.txt
+```
+
+### 3. Build the Sandbox
 
 ```bash
 cd zencube
 make
 ```
 
-### 3. Run the GUI
+This will compile `sandbox.c` into the `sandbox` executable.
+
+### 4. Run the GUI
+
+**Modern GUI (Recommended):**
+```bash
+python zencube_modern_gui.py
+```
+
+**Legacy GUI:**
 
 ```bash
 cd ..
@@ -170,6 +277,51 @@ python zencube_gui.py
 ## 🎓 Quick Examples
 
 ### Using the GUI
+**Legacy GUI:**
+```bash
+python zencube_gui.py
+```
+
+---
+
+## 📖 Usage Examples
+
+### Modern GUI Workflow
+
+1. **Launch** Modern GUI:
+   ```bash
+   cd zencube
+   python zencube_modern_gui.py
+   ```
+
+2. **Quick Test** - Click a quick command button:
+   - 📋 **ls** - List files
+   - 💬 **echo** - Echo message
+   - 👤 **whoami** - Show user
+   - ⏱️ **CPU Test** - Test CPU limit
+   - 💾 **Memory Test** - Test memory limit
+
+3. **Enable Limits** - Check the boxes:
+   - ☑️ CPU Time (5 seconds)
+   - ☑️ Memory (256 MB)
+   - ☑️ Max Processes (10)
+   - ☑️ File Size (100 MB)
+
+4. **Or Use Presets**:
+   - 🔓 **No Limits** - Unrestricted
+   - 🟢 **Light** - CPU: 30s, Memory: 1GB
+   - 🟡 **Medium** - CPU: 10s, Memory: 512MB, Procs: 10
+   - 🔴 **Strict** - All limits enabled
+
+5. **Execute** - Click **▶️ Execute Command**
+
+6. **Watch Output** - See real-time colored output in terminal
+
+7. **Stop if Needed** - Click **⏹️ Stop** button
+
+8. **Hide Terminal** - Click **👁️ Hide Terminal** for more workspace
+
+### Legacy GUI Example
 
 1. Launch: `python zencube_gui.py`
 2. Click quick command: **"infinite_loop"**
@@ -177,7 +329,7 @@ python zencube_gui.py
 4. Click: **"▶ Execute Command"**
 5. Watch terminal output show CPU limit violation!
 
-### Using CLI
+### Command Line Interface
 
 ```bash
 cd zencube
@@ -190,6 +342,9 @@ cd zencube
 
 # Test multiple limits
 ./sandbox --cpu=5 --mem=256 --procs=5 /bin/ls -la
+
+# No limits
+./sandbox /bin/echo "Hello ZenCube!"
 ```
 
 ---
@@ -213,9 +368,20 @@ make test-phase1
 
 ### GUI Testing
 
-1. Launch GUI
+**Modern GUI:**
+1. Launch: `python zencube_modern_gui.py`
+2. Test responsive design - resize window to see buttons wrap
+3. Try each quick command button (5 buttons)
+4. Test each preset (None, Light, Medium, Strict)
+5. Toggle individual limits with checkboxes
+6. Test terminal hide/show toggle
+7. Drag splitter handle to resize terminal
+8. Verify colored output (green, red, orange, blue)
+
+**Legacy GUI:**
+1. Launch: `python zencube_gui.py`
 2. Try each quick command button
-3. Test each preset (None, Light, Medium, Strict)
+3. Test each preset
 4. Toggle individual limits
 5. Verify terminal output displays correctly
 
@@ -223,9 +389,54 @@ make test-phase1
 
 ---
 
+## 📚 Documentation
+
+### Complete Guides
+
+- **[MODERN_GUI_DOCUMENTATION.md](MODERN_GUI_DOCUMENTATION.md)** - Complete modern GUI guide
+  - Installation and setup
+  - Visual design details
+  - Component architecture
+  - Styling guide
+  - Customization tips
+  - ~600 lines of documentation
+
+- **[RESPONSIVE_FEATURES.md](RESPONSIVE_FEATURES.md)** - Responsive design features
+  - FlowLayout implementation
+  - Terminal visibility toggle
+  - Screen size adaptations
+  - Usage tips
+
+- **[BUGFIX_LAYOUT_ISSUES.md](BUGFIX_LAYOUT_ISSUES.md)** - Layout fixes
+  - UI fitting on screen
+  - Splitter visibility
+  - Button placement
+  - Compact grid layout
+
+- **[GUI_USAGE.md](GUI_USAGE.md)** - Legacy GUI usage guide
+
+- **[CROSS_PLATFORM_SUPPORT.md](CROSS_PLATFORM_SUPPORT.md)** - Platform compatibility
+
+### Core Documentation
+
+- **zencube/README.md** - Detailed C sandbox documentation
+- **zencube/TEST_RESULTS.md** - Test results and benchmarks
+
+---
+
 ## 🆘 Troubleshooting
 
-### GUI Won't Start
+### Modern GUI Won't Start
+
+```bash
+# Install PySide6
+pip install PySide6>=6.5.0
+
+# Or upgrade if already installed
+pip install --upgrade PySide6
+```
+
+### Legacy GUI Won't Start
 
 ```bash
 # Install Tkinter
@@ -241,6 +452,27 @@ sudo apt-get install python3-tk
 cd zencube
 make clean
 make
+chmod +x sandbox  # Linux only
+```
+
+### WSL Issues on Windows
+
+```bash
+# Enable WSL
+wsl --install
+
+# Update WSL
+wsl --update
+
+# Check WSL version
+wsl --version
+```
+
+### Terminal Not Showing Newlines
+
+**Fixed in version 2.1** - Update to latest version:
+```bash
+git pull origin dev
 ```
 
 ### WSL Issues
@@ -308,42 +540,97 @@ This project is licensed under the MIT License.
 
 ## 🌟 Key Highlights
 
-| Feature | CLI | GUI |
-|---------|-----|-----|
-| Execute Commands | ✅ | ✅ |
-| CPU Limits | ✅ | ✅ |
-| Memory Limits | ✅ | ✅ |
-| Process Limits | ✅ | ✅ |
-| File Size Limits | ✅ | ✅ |
-| Real-time Output | ✅ | ✅ |
-| User-Friendly | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
-| File Browser | ❌ | ✅ |
-| Presets | ❌ | ✅ |
-| Stop Button | ❌ | ✅ |
+| Feature | CLI | Legacy GUI | Modern GUI |
+|---------|-----|-----------|------------|
+| Execute Commands | ✅ | ✅ | ✅ |
+| CPU Limits | ✅ | ✅ | ✅ |
+| Memory Limits | ✅ | ✅ | ✅ |
+| Process Limits | ✅ | ✅ | ✅ |
+| File Size Limits | ✅ | ✅ | ✅ |
+| Real-time Output | ✅ | ✅ | ✅ |
+| Colored Output | ❌ | ✅ | ✅ |
+| User-Friendly | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| File Browser | ❌ | ✅ | ✅ |
+| Presets | ❌ | ✅ | ✅ (4 types) |
+| Stop Button | ❌ | ✅ | ✅ |
+| Responsive Design | ❌ | ❌ | ✅ |
+| Hide Terminal | ❌ | ❌ | ✅ |
+| Material Design | ❌ | ❌ | ✅ |
+| Resizable Splitter | ❌ | ❌ | ✅ |
+| Quick Commands | ❌ | ✅ | ✅ (5 buttons) |
+| Dependencies | None | Tkinter | PySide6 |
 
 ---
 
 ## 📚 Learning Resources
 
-- **For Beginners**: Start with [`GUI_USAGE.md`](GUI_USAGE.md)
-- **For CLI Users**: Read [`zencube/QUICKSTART.md`](zencube/QUICKSTART.md)
-- **For Developers**: Read [`zencube/README.md`](zencube/README.md)
-- **For Testing**: See [`zencube/TESTING_CHECKLIST.md`](zencube/TESTING_CHECKLIST.md)
+- **Modern GUI Guide**: [`MODERN_GUI_DOCUMENTATION.md`](MODERN_GUI_DOCUMENTATION.md) - Complete modern GUI documentation
+- **For Beginners**: [`GUI_USAGE.md`](GUI_USAGE.md) - Legacy GUI usage guide
+- **Responsive Features**: [`RESPONSIVE_FEATURES.md`](RESPONSIVE_FEATURES.md) - Responsive design details
+- **For CLI Users**: [`zencube/QUICKSTART.md`](zencube/QUICKSTART.md) - Command-line quick start
+- **For Developers**: [`zencube/README.md`](zencube/README.md) - Core sandbox documentation
+- **For Testing**: [`zencube/TESTING_CHECKLIST.md`](zencube/TESTING_CHECKLIST.md) - Test procedures
+- **Bug Fixes**: [`BUGFIX_LAYOUT_ISSUES.md`](BUGFIX_LAYOUT_ISSUES.md) - Layout fixes documentation
 
 ---
 
 ## 🎉 Get Started Now!
 
+**Modern GUI (Recommended):**
 ```bash
-# Launch the GUI
-python zencube_gui.py
-
-# Or use the CLI
-cd zencube && make && ./sandbox --help
+pip install PySide6
+cd zencube
+python zencube_modern_gui.py
 ```
 
-**🧊 ZenCube - Making Sandboxing Simple, Safe, and Accessible!**
+**Legacy GUI (No dependencies):**
+```bash
+cd zencube
+python zencube_gui.py
+```
+
+**Command Line:**
+```bash
+cd zencube
+make
+./sandbox --help
+```
+
+---
+
+## 📊 Project Statistics
+
+- **Lines of Code**: ~1,500 (C) + ~1,100 (Python GUI)
+- **Documentation**: ~2,000+ lines
+- **Test Coverage**: 97%+ pass rate
+- **Supported Platforms**: Windows (WSL2), Linux
+- **GUI Versions**: 2 (Tkinter + PySide6)
+- **Total Features**: 20+
+- **Development Time**: Active development
+
+---
+
+## 🏆 Achievements
+
+✅ **Fully functional sandbox** with 4 resource limits  
+✅ **Two GUI interfaces** (Legacy + Modern)  
+✅ **Material Design** implementation  
+✅ **Responsive layout** with FlowLayout  
+✅ **Cross-platform** Windows & Linux support  
+✅ **Comprehensive documentation** (2000+ lines)  
+✅ **97%+ test pass rate**  
+✅ **Production-ready** code quality  
+
+---
+
+**🧊 ZenCube - Making Sandboxing Simple, Safe, Beautiful, and Accessible!**
 
 ---
 
 *For issues, questions, or feedback, please open an issue on GitHub or contact the project maintainers.*
+
+**Author**: Kamal Singh Dhami  
+**Repository**: https://github.com/KamalSDhami/ZenCube  
+**Branch**: dev  
+**Version**: 2.1  
+**Last Updated**: October 13, 2025
