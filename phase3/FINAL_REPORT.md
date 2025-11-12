@@ -30,3 +30,25 @@
 - The panel exposes Enable/Enforce toggles, jail path picker, and Prepare/Run actions that execute the existing dev-safe scripts in background threads.
 - Added a headless regression test `tests/test_gui_file_jail_py.sh` to exercise the panel logic without launching a full GUI and refreshed `docs/GUI_FILE_JAIL.md` accordingly.
 
+# Task B – Network Restrictions Report
+
+## Overview
+- Introduced a `--no-net` flag to the sandbox. When supported, a seccomp filter blocks outbound socket syscalls and returns `EPERM`, keeping the target process alive yet networkless.
+- Integrated a dev-safe Python wrapper (`monitor/net_wrapper.py`) that monkey-patches `socket` APIs, records blocked attempts in `monitor/logs/net_restrict_*.json`, and raises `PermissionError` without requiring root.
+- Added a PySide6 Network panel so users can toggle network isolation beside the file jail controls. Dev-safe mode wraps commands automatically; enforce mode surfaces the exact `sudo sandbox --no-net ...` command string.
+- Created `scripts/disable_network_dev.sh` as an optional helper to run commands inside an `unshare --net` namespace for experiments without touching global iptables configuration.
+
+## Validation
+- Test command: `./tests/test_network_restrict.sh`
+- Result: PASS – sandbox run exited with non-zero status, and the latest `net_restrict_*.json` log contained at least one recorded violation. Entry recorded in `phase3/TEST_RUNS.md`.
+
+## Limitations & Follow-ups
+- Seccomp filters require kernels with `PR_SET_NO_NEW_PRIVS` support. When installation fails the sandbox logs a warning and relies on the Python wrapper; deeper coverage (e.g., non-Python binaries) will need future work such as network namespaces or iptables.
+- The wrapper targets Python workloads. Native binaries still depend on the seccomp or namespace paths.
+- Namespace helper currently assumes `unshare --user --map-root-user --net`; environments without user namespaces must fallback to the wrapper.
+
+## Artefacts
+- Code: `zencube/sandbox.c`, `monitor/net_wrapper.py`, `gui/network_panel.py`, `zencube/zencube_modern_gui.py`
+- Scripts & Tests: `scripts/disable_network_dev.sh`, `tests/test_network_restrict.sh`
+- Documentation & Logs: `docs/NETWORK_RESTRICTIONS.md`, `phase3/NOTES.md`, `phase3/TEST_RUNS.md`, `monitor/logs/net_restrict_*.json`
+

@@ -353,6 +353,13 @@ class FileJailPanel(QWidget):
         return "Summary → method: {} | exit: {} | violations: {}".format(method, status, len(violations))
 
     def _build_target_command(self) -> list[str]:
+        getter = getattr(self._main_window, "get_effective_target_command", None)
+        if callable(getter):
+            try:
+                return getter()
+            except ValueError:
+                return []
+
         cmd_field = getattr(self._main_window, "command_input", None)
         args_field = getattr(self._main_window, "args_input", None)
         if cmd_field is None:

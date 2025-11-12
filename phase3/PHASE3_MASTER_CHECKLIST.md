@@ -3,6 +3,7 @@
 ## Task Tracking
 - [x] File System Restriction (dev-safe) — ✅ Completed by GitHub Copilot 2025-11-12 03:48 UTC (chroot flag + dev wrapper + tests)
 - [x] GUI – File Restriction Panel (Python GUI) — ✅ Done (score: 9/10) — commit: db556a1
+- [x] Network Restrictions (seccomp + dev-safe) — ✅ Done (score: 9.2/10) — branch: phase3-task-b-network
 
 ## Filesystem Isolation Goals
 - [x] Implement chroot() jail for sandboxed processes
@@ -13,6 +14,6 @@
 - [ ] Add dedicated filesystem isolation test programs
 
 ## Hardening Enhancements
-- [ ] Introduce seccomp-based system call filtering
-- [ ] Enable network namespace isolation where applicable
+- [x] Introduce seccomp-based system call filtering
+- [x] Enable network namespace isolation where applicable *(dev helper script via `unshare --net`)*
 - [ ] Implement capability dropping for reduced privileges

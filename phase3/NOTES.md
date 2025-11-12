@@ -10,3 +10,11 @@
 - Remaining follow-up: run the new test script after building the jail, update the checklist, record test evidence in `phase3/TEST_RUNS.md`, and complete the final scoring once validations pass.
 - Native GUI integration (PySide6): the new `gui/file_jail_panel.py` widget is attached inside `zencube/zencube_modern_gui.py` via `attach_file_jail_panel`. This keeps Task A accessible from the existing PySide6 interface instead of relying on the removed web JSX prototype.
 - The panel enforces dev-safe defaults by routing Prepare/Run actions through `build_jail_dev.sh` and `monitor/jail_wrapper.py`, streaming wrapper output directly into the GUI while surfacing sudo commands only as instructions.
+
+# Task B – Network Restrictions Notes
+
+- Added a seccomp-based `--no-net` flag in `zencube/sandbox.c`. The filter denies `socket`, `connect`, `sendto`, `sendmsg`, `recvfrom`, and `recvmsg`, returning `EPERM` so userland can surface a `PermissionError` without killing the process.
+- When seccomp cannot be installed (common on non-root dev hosts) the sandbox logs the failure and the GUI falls back to `monitor/net_wrapper.py`, which monkey patches Python's `socket` module and logs attempts to `monitor/logs/net_restrict_*.json`.
+- The new GUI Network panel mirrors the file-jail workflow: dev-safe mode auto-wraps commands, enforce mode surfaces the exact `sudo sandbox --no-net ...` invocation instead of attempting privileged changes.
+- `scripts/disable_network_dev.sh` demonstrates the optional `unshare --net` approach without persisting iptables changes; failures are logged to `monitor/logs/net_namespace_*.log`.
+- Regression test `tests/test_network_restrict.sh` compiles the sandbox if needed, runs a socket probe through the wrapper, asserts the run fails, and verifies that a log file with at least one event exists.
