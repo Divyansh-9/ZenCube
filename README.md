@@ -629,8 +629,5 @@ make
 
 *For issues, questions, or feedback, please open an issue on GitHub or contact the project maintainers.*
 
-**Author**: Kamal Singh Dhami  
-**Repository**: https://github.com/KamalSDhami/ZenCube  
-**Branch**: dev  
-**Version**: 2.1  
-**Last Updated**: October 13, 2025
+
+
