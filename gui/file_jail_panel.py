@@ -104,6 +104,25 @@ class _JailRunWorker(QThread):
         self.finished.emit(code, log_path)
 
 
+class _InferenceWorker(QThread):
+    completed = Signal(object)
+    failed = Signal(str)
+
+    def __init__(self, log_path: str, parent: Optional[QWidget] = None) -> None:
+        super().__init__(parent)
+        self._log_path = log_path
+
+    def run(self) -> None:  # noqa: D401 - QThread entry point
+        try:
+            from inference import ml_inference
+
+            result = ml_inference.predict_run(self._log_path)
+        except Exception as exc:  # pragma: no cover - surfaced in UI
+            self.failed.emit(str(exc))
+            return
+        self.completed.emit(result)
+
+
 class FileJailPanel(QWidget):
     """Native PySide6 panel that manages the file jail workflow."""
 
@@ -112,6 +131,7 @@ class FileJailPanel(QWidget):
         self._main_window = main_window
         self._prepare_worker: Optional[_PrepareWorker] = None
         self._run_worker: Optional[_JailRunWorker] = None
+        self._inference_worker: Optional[_InferenceWorker] = None
         self._latest_log_path: Optional[str] = None
 
         self._init_ui()
@@ -161,9 +181,13 @@ class FileJailPanel(QWidget):
         layout.addWidget(self.prepare_button, 5, 0)
         layout.addWidget(self.apply_button, 5, 1)
 
+        self.inference_button = QPushButton("Run ML Inference")
+        self.inference_button.setEnabled(False)
+        layout.addWidget(self.inference_button, 6, 0, 1, 2)
+
         status_label = QLabel("Status")
         status_label.setStyleSheet("font-weight: 600; color: #4a5568;")
-        layout.addWidget(status_label, 6, 0, 1, 2)
+        layout.addWidget(status_label, 7, 0, 1, 2)
 
         self.status_output = QTextEdit()
         self.status_output.setReadOnly(True)
@@ -171,12 +195,12 @@ class FileJailPanel(QWidget):
         self.status_output.setStyleSheet(
             "QTextEdit { background-color: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px; }"
         )
-        layout.addWidget(self.status_output, 7, 0, 1, 2)
+        layout.addWidget(self.status_output, 8, 0, 1, 2)
 
         self.log_link = QLabel("Log: (none)")
         self.log_link.setOpenExternalLinks(True)
         self.log_link.setTextInteractionFlags(Qt.TextBrowserInteraction)
-        layout.addWidget(self.log_link, 8, 0, 1, 2)
+        layout.addWidget(self.log_link, 9, 0, 1, 2)
 
     def _connect_signals(self) -> None:
         self.use_jail_check.toggled.connect(self._update_controls)
@@ -185,6 +209,7 @@ class FileJailPanel(QWidget):
         self.enforce_check.toggled.connect(self._on_enforce_toggled)
         self.prepare_button.clicked.connect(self._on_prepare_clicked)
         self.apply_button.clicked.connect(self._on_apply_clicked)
+        self.inference_button.clicked.connect(self._on_inference_clicked)
 
     def _update_controls(self, enabled: bool) -> None:
         for widget in (
@@ -322,6 +347,7 @@ class FileJailPanel(QWidget):
             if summary:
                 self.status_output.append(summary)
             self.log_link.setText(f'<a href="file://{log_path}">Log: {log_path}</a>')
+            self.inference_button.setEnabled(True)
         else:
             latest = self._find_latest_log()
             if latest:
@@ -331,8 +357,10 @@ class FileJailPanel(QWidget):
                 if summary:
                     self.status_output.append(summary)
                 self.log_link.setText(f'<a href="file://{latest}">Log: {latest}</a>')
+                self.inference_button.setEnabled(True)
             else:
                 self.status_output.append("No log file detected yet.")
+                self.inference_button.setEnabled(False)
 
     def _find_latest_log(self) -> Optional[Path]:
         if not LOG_DIR.exists():
@@ -381,6 +409,43 @@ class FileJailPanel(QWidget):
         if command_parts:
             base.extend(command_parts)
         return " ".join(base)
+
+    def _on_inference_clicked(self) -> None:
+        if not self._latest_log_path:
+            self.status_output.append("No log available for inference yet.")
+            return
+        if self._inference_worker and self._inference_worker.isRunning():
+            self.status_output.append("Inference already running...")
+            return
+
+        self.status_output.append("Running ML inference on latest log...")
+        self.inference_button.setEnabled(False)
+
+        self._inference_worker = _InferenceWorker(self._latest_log_path, self)
+        self._inference_worker.completed.connect(self._on_inference_completed)
+        self._inference_worker.failed.connect(self._on_inference_failed)
+        self._inference_worker.finished.connect(lambda: self.inference_button.setEnabled(True))
+        self._inference_worker.start()
+
+    def _on_inference_completed(self, payload: object) -> None:
+        try:
+            result = dict(payload)
+        except Exception:
+            self.status_output.append("Inference returned unexpected data.")
+            return
+
+        label = result.get("label", "unknown")
+        score = result.get("score")
+        score_text = f"{score:.2f}" if isinstance(score, (int, float)) else "n/a"
+        self.status_output.append(f"Inference result → label={label}, score={score_text}")
+
+        top = result.get("explanation_top") or {}
+        if isinstance(top, dict) and top:
+            formatted = ", ".join(f"{key}:{value:.2f}" for key, value in list(top.items())[:5])
+            self.status_output.append(f"Top signals → {formatted}")
+
+    def _on_inference_failed(self, message: str) -> None:
+        self.status_output.append(f"ML inference failed: {message}")
 
 
 def attach_file_jail_panel(main_window, layout) -> FileJailPanel:

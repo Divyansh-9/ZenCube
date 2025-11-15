@@ -72,4 +72,7 @@
 
  - [2025-11-15 00:00 UTC] GENERATED: monitor/logs/synth/ - Synthetic telemetry scenarios created via `data.sample_generator.generate_dataset` (seed=2025). Files written for malicious/benign/unknown scenarios.
  - [2025-11-15 00:00 UTC] RAN: models/train.py --quick --no-lstm - Quick baseline training completed. Dataset score: 10.0; Baseline model score: 9.3767. Artifacts saved under `models/artifacts`.
+ - [2025-11-15 12:00 UTC] INSTALLED: torch==2.3.1+cpu - Added CPU-only PyTorch to project venv for LSTM training.
+ - [2025-11-15 12:05 UTC] RAN: models/train.py - Full training regenerated dataset, RandomForest (score 9.44), and LSTM (score 10.0) with run-context features.
+ - [2025-11-15 12:07 UTC] RAN: models/evaluate.py --use-lstm - Verified baseline + LSTM performance summaries for logging.
 

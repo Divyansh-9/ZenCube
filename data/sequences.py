@@ -11,6 +11,15 @@ from .collector import TelemetryRun
 
 DEFAULT_KEYS = ("cpu_percent", "memory_rss", "open_files", "socket_count", "read_bytes", "write_bytes")
 
+SCALE_HINTS = {
+    "cpu_percent": 100.0,
+    "memory_rss": 2.0 * 1024 * 1024 * 1024,
+    "open_files": 800.0,
+    "socket_count": 800.0,
+    "read_bytes": 600_000_000.0,
+    "write_bytes": 600_000_000.0,
+}
+
 
 @dataclass(slots=True)
 class SequenceExample:
@@ -57,16 +66,15 @@ def _normalise_samples(samples: Sequence[dict], keys: Sequence[str]) -> np.ndarr
         for key in keys:
             value = sample.get(key, 0.0)
             try:
-                row.append(float(value))
+                raw = float(value)
             except (TypeError, ValueError):
-                row.append(0.0)
+                raw = 0.0
+            scale = SCALE_HINTS.get(key, 1.0)
+            if scale <= 0:
+                scale = 1.0
+            row.append(np.clip(raw / scale, 0.0, 1.0))
         matrix.append(row)
-    array = np.asarray(matrix, dtype=float)
-    mins = array.min(axis=0)
-    maxs = array.max(axis=0)
-    denom = np.where(maxs - mins > 1e-6, maxs - mins, 1.0)
-    scaled = (array - mins) / denom
-    return scaled.astype(np.float32)
+    return np.asarray(matrix, dtype=np.float32)
 
 
 __all__ = ["SequenceExample", "extract_sequences", "DEFAULT_KEYS"]

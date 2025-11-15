@@ -9,6 +9,7 @@
 | 2025-11-13T12:48:00Z | Monitoring enhancements (Phase 3) | 9.6 | Matplotlib charts with EWMA, alerts & log rotation, Prometheus exporter, CI workflow, and full regression suite |
 
 
-| 2025-11-15T00:00:00Z | Phase 4 – Dataset Quality (synthetic + real) | 10.0 | Dataset generator (data.sample_generator) produced balanced benign/malicious/unknown; diversity metrics passed |
-| 2025-11-15T00:00:00Z | Phase 4 – Baseline Model (RandomForest quick run) | 9.38 | Quick training produced RandomForest artifacts in `models/artifacts` (model.pkl, scaler.pkl); F1/accuracy acceptable |
+| 2025-11-15T12:05:00Z | Phase 4 – Dataset Quality (synthetic + real) | 10.0 | Full dataset scoring (real + synthetic) met diversity/balance targets; `models/train.py` meta.json recorded 61 samples with variance mean 1.05e16 |
+| 2025-11-15T12:05:00Z | Phase 4 – Baseline Model (RandomForest) | 9.44 | Final RandomForest training delivered F1_macro 0.84 / accuracy 0.88; artifacts in `models/artifacts/` (model.pkl, scaler.pkl, report.md) |
+| 2025-11-15T12:05:00Z | Phase 4 – LSTM Sequence Model | 10.0 | Bidirectional LSTM + run-context features achieved perfect sequence accuracy (score 10.0); `models/artifacts/lstm.pt` saved |
 

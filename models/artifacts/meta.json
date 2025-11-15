@@ -14,10 +14,10 @@
     "benign": 24,
     "malicious": 24
   },
-  "model_score": 9.376741974262284,
+  "model_score": 9.437119322827833,
   "model_f1_macro": 0.8412698412698413,
-  "model_accuracy": 0.88,
-  "lstm_score": null,
+  "model_accuracy": 0.875,
+  "lstm_score": 10.0,
   "feature_columns": [
     "cpu_mean",
     "cpu_max",

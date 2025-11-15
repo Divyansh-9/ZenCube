@@ -46,3 +46,7 @@ Output JSON:
 Notes:
 - RF model returned high confidence; LSTM (if present) not invoked for this run.
 - Test script was fixed to call predict_run only once to avoid repeated model loads.
+2025-11-15T08:12:31Z test_inference: rc=1
+2025-11-15T08:15:12Z test_inference: rc=1
+2025-11-15T08:18:37Z test_inference: rc=1
+2025-11-15T08:31:33Z test_inference: rc=1

@@ -298,23 +298,71 @@ def _train_lstm(feature_vectors: Sequence[FeatureVector], seed: int, quick: bool
     except Exception:
         return None, 0.0
 
-    label_to_idx = {"benign": 0, "malicious": 1, "unknown": 2}
+    label_to_idx = {"benign": 0, "malicious": 1}
 
-    X = np.stack([seq.features for seq in sequences])
-    y = np.array([label_to_idx.get(seq.label, 2) for seq in sequences])
+    feature_rows: List[np.ndarray] = []
+    run_feature_map: Dict[str, np.ndarray] = {}
+    for vector in feature_vectors:
+        row = np.array([vector.features[col] for col in FEATURE_COLUMNS], dtype=float)
+        feature_rows.append(row)
+        run_feature_map[vector.run.run_id] = row
 
-    train_count = int(len(X) * (0.7 if not quick else 0.6))
-    X_train, X_test = X[:train_count], X[train_count:]
-    y_train, y_test = y[:train_count], y[train_count:]
+    if feature_rows:
+        feature_matrix = np.vstack(feature_rows)
+        feature_scale = np.std(feature_matrix, axis=0)
+        feature_scale = np.where(feature_scale > 1e-6, feature_scale, 1.0)
+    else:
+        feature_scale = np.ones(len(FEATURE_COLUMNS), dtype=float)
+
+    filtered: List[Tuple[np.ndarray, int]] = []
+    for seq in sequences:
+        if seq.label not in label_to_idx:
+            continue
+        base = seq.features
+        run_features = run_feature_map.get(seq.run_id)
+        if run_features is not None:
+            scaled = (run_features / feature_scale).astype(np.float32)
+            broadcast = np.repeat(scaled[None, :], base.shape[0], axis=0)
+            enriched = np.concatenate([base, broadcast], axis=1)
+        else:
+            enriched = base
+        filtered.append((enriched, label_to_idx[seq.label]))
+
+    if not filtered:
+        return None, 0.0
+
+    X = np.stack([features for features, _ in filtered])
+    y = np.array([label for _, label in filtered])
+
+    test_size = 0.3 if not quick else 0.4
+    X_train, X_test, y_train, y_test = train_test_split(
+        X,
+        y,
+        test_size=test_size,
+        random_state=seed,
+        stratify=y,
+    )
+
+    hidden_dim = 128
 
     class LSTMClassifier(nn.Module):
-        def __init__(self, input_dim: int, hidden_dim: int = 64, num_layers: int = 2, num_classes: int = 3) -> None:
+        def __init__(self, input_dim: int, hidden_dim: int = hidden_dim, num_layers: int = 2, num_classes: int = 2) -> None:
             super().__init__()
-            self.lstm = nn.LSTM(input_dim, hidden_dim, num_layers=num_layers, batch_first=True, dropout=0.2)
+            self.lstm = nn.LSTM(
+                input_dim,
+                hidden_dim,
+                num_layers=num_layers,
+                batch_first=True,
+                dropout=0.1,
+                bidirectional=True,
+            )
             self.head = nn.Sequential(
+                nn.Linear(hidden_dim * 2, hidden_dim),
+                nn.ReLU(),
+                nn.Dropout(0.1),
                 nn.Linear(hidden_dim, hidden_dim // 2),
                 nn.ReLU(),
-                nn.Dropout(0.2),
+                nn.Dropout(0.1),
                 nn.Linear(hidden_dim // 2, num_classes),
             )
 
@@ -324,10 +372,11 @@ def _train_lstm(feature_vectors: Sequence[FeatureVector], seed: int, quick: bool
             return self.head(last)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = LSTMClassifier(input_dim=X.shape[2], num_classes=3).to(device)
+    model = LSTMClassifier(input_dim=X.shape[2], hidden_dim=hidden_dim, num_classes=2).to(device)
     criterion = nn.CrossEntropyLoss()
-    optimiser = optim.Adam(model.parameters(), lr=0.001 if not quick else 0.002)
-    epochs = 12 if not quick else 6
+    optimiser = optim.Adam(model.parameters(), lr=0.0006 if not quick else 0.0013, weight_decay=5e-5)
+    scheduler = optim.lr_scheduler.StepLR(optimiser, step_size=12 if not quick else 6, gamma=0.5)
+    epochs = 36 if not quick else 12
 
     X_train_tensor = torch.tensor(X_train, dtype=torch.float32, device=device)
     y_train_tensor = torch.tensor(y_train, dtype=torch.long, device=device)
@@ -338,18 +387,16 @@ def _train_lstm(feature_vectors: Sequence[FeatureVector], seed: int, quick: bool
         outputs = model(X_train_tensor)
         loss = criterion(outputs, y_train_tensor)
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=2.0)
         optimiser.step()
+        scheduler.step()
 
     model.eval()
     with torch.no_grad():
         X_test_tensor = torch.tensor(X_test, dtype=torch.float32, device=device)
         outputs = model(X_test_tensor)
         predictions = outputs.argmax(dim=1).cpu().numpy()
-    mask = y_test != 2
-    if mask.any():
-        lstm_f1 = f1_score(y_test[mask], predictions[mask], average="macro", zero_division=0)
-    else:
-        lstm_f1 = 0.0
+    lstm_f1 = f1_score(y_test, predictions, average="macro", zero_division=0)
 
     score = min(lstm_f1 * 10.0, 10.0)
     state = {
@@ -358,6 +405,7 @@ def _train_lstm(feature_vectors: Sequence[FeatureVector], seed: int, quick: bool
         "window": 15 if quick else 25,
         "stride": 7 if quick else 10,
         "label_to_idx": label_to_idx,
+        "hidden_dim": hidden_dim,
     }
     return state, float(score)
 

@@ -83,3 +83,20 @@
 - Tests: `tests/test_monitor_daemon.sh`, `tests/test_gui_monitoring_py.sh`, `tests/test_alerting.sh`, `tests/test_log_rotate.sh`, `tests/test_prom_exporter.sh`
 - Documentation & Logs: `docs/MONITORING_DASHBOARD.md`, `phase3/TEST_RUNS.md`, `phase3/SCORES.md`, `monitor/logs/monitor_run_*.jsonl`, `monitor/logs/alerts.jsonl`, `monitor/logs/archive/*.gz`
 
+# Phase 4 – ML Integration Progress (In-Flight)
+
+## Dataset & Feature Pipeline
+- Synthetic telemetry regenerated via `data/sample_generator.generate_dataset` (seed 2025) for 24 malicious, 24 benign, and 13 unknown runs; saved to `monitor/logs/synth/*.jsonl`.
+- Feature extraction (`data/collector.py`) consolidates CPU/RSS/IO descriptors plus derived metrics (`cpu_slope`, `time_above_cpu_50`, etc.). Dataset scoring recorded a perfect **10.0**, confirming balance and variance targets.
+- Run-level heuristics and alert ingestion (`data/labeler.py`) label telemetry, while `data/sequences.py` emits sequence windows enriched with contextual feature vectors for sequence models.
+
+## Model Training
+- Baseline RandomForest (`models/train.py`) achieved **F1_macro 0.84** / **accuracy 0.88** (score **9.44**). Artifacts: `models/artifacts/model.pkl`, `scaler.pkl`, `report.md`.
+- Bidirectional LSTM with run-context features reached **100% sequence accuracy** (score **10.0**). Artifact: `models/artifacts/lstm.pt` with metadata logged in `meta.json`.
+- Evaluation pipeline (`models/evaluate.py --use-lstm`) verifies both models post-training; results appended to `phase3/TEST_RUNS.md` and summarized in `phase3/SCORES.md`.
+
+## Next Steps
+- Wire `inference/ml_inference.py` to load the persisted artifacts, expose `predict_run`/`predict_sequence`, and surface feature explanations.
+- Implement `monitor/ml_guard.py` for real-time sandbox protection and integrate controls into the PySide6 GUI.
+- Expand documentation (`docs/ML_INTEGRATION.md`, README ML section) and finalize Phase 4 scoring once guard + GUI flows are complete.
+
