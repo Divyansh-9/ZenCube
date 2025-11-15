@@ -6,7 +6,7 @@
 - [x] Network Restrictions (seccomp + dev-safe) — ✅ Done (score: 9.2/10) — branch: phase3-task-b-network
 - [x] Monitoring & Dashboard (Task C) — ✅ Completed (monitoring sampler, GUI dashboard, tests)
 - [x] Monitoring enhancements — ✅ Done (score: 9.6/10) — commit: 0afbd3c
-- [~] Phase 4 – ML Integration — 🔄 In-Progress (started by GitHub Copilot 2025-11-13 15:18 UTC)
+- [ ] Phase 4 – ML Integration — ❌ Rolled back locally (backup: backup_phase4_archive/, branch: backup/phase4-snapshot)
 
 ## Filesystem Isolation Goals
 - [x] Implement chroot() jail for sandboxed processes

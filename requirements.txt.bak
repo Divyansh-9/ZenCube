@@ -8,6 +8,7 @@ matplotlib>=3.7.0
 prometheus-client>=0.17.0
 
 # Phase 4 ML Integration
+torch>=2.1.0
 
 # Legacy GUI (Optional - for backwards compatibility)
 # tkinter is included with most Python installations

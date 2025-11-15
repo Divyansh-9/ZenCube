@@ -76,3 +76,4 @@
  - [2025-11-15 12:05 UTC] RAN: models/train.py - Full training regenerated dataset, RandomForest (score 9.44), and LSTM (score 10.0) with run-context features.
  - [2025-11-15 12:07 UTC] RAN: models/evaluate.py --use-lstm - Verified baseline + LSTM performance summaries for logging.
 
+- [2025-11-15 10:04 UTC] ROLLBACK: Phase-4 ML Integration — Archived all Phase-4 files to backup_phase4_archive/ and uninstalled numpy, pandas, scikit-learn, joblib, torch from venv. Backup branch: backup/phase4-snapshot. Removed files: inference/ml_inference.py, data/{collector,labeler,sample_generator,sequences}.py, models/{train,evaluate}.py, models/artifacts/{meta.json,model.pkl,scaler.pkl,report.md,lstm.pt}, docs/ML_INTEGRATION.md, tests/test_inference.sh.
