@@ -58,4 +58,115 @@
 - [2025-11-13 03:41 UTC] READ: MODERN_GUI_DOCUMENTATION.md — Reviewed modern GUI architecture to embed charts without breaking styling.
 - [2025-11-13 03:42 UTC] READ: RESPONSIVE_FEATURES.md — Ensured new controls honor existing responsive layout expectations.
 - [2025-11-13 03:43 UTC] READ: CROSS_PLATFORM_SUPPORT.md — Confirmed WSL/native handling considerations for exporter and rotation commands.
+- [2025-11-13 15:18 UTC] READ: README.md — Refreshed project feature set and roadmap before launching Phase 4 ML work.
+- [2025-11-13 15:19 UTC] READ: docs/PROJECT_OVERVIEW.md — Revisited system architecture to map telemetry sources for ML pipeline planning.
+- [2025-11-13 15:20 UTC] READ: docs/ROLE_3_INTEGRATION.md — Reviewed integration layer duties to align upcoming ML ingestion with GUI and sandbox bridge.
+ - [2025-11-14 00:01 UTC] READ: docs/MONITORING_DASHBOARD.md - Monitoring dashboard: sampler behavior, JSONL artefacts, EWMA smoothing, alerts, log rotation, Prometheus exporter, and CI/testing hooks.
+ - [2025-11-14 00:02 UTC] READ: docs/GUI_FILE_JAIL.md - GUI File Jail panel: controls, dev-safe wrapper usage, prepare/apply flow, safety constraints, and headless test notes.
+ - [2025-11-14 00:03 UTC] READ: phase3/FINAL_REPORT.md - Phase 3 final report: chroot flag, jail wrapper, network restrictions, monitoring additions and artefacts summary.
+ - [2025-11-14 00:04 UTC] READ: phase3/SCORES.md - Phase 3 scoring table: task-level scores and timestamps for filesystem, GUI, network, and monitoring items.
+ - [2025-11-14 00:05 UTC] READ: phase3/TEST_RUNS.md - Phase 3 test runs log: timestamped PASS entries for jail, GUI file jail, network restrict, and monitoring regression tests.
+ - [2025-11-14 00:06 UTC] READ: phase3/NOTES.md - Developer notes: dev-safe jail wrapper details, strace vs /proc fallback, build_jail_dev script, and follow-up actions.
+ - [2025-11-14 00:07 UTC] READ: GUI_IMPLEMENTATION.md - GUI implementation overview: Tkinter-based legacy GUI, features, threading, subprocess management, and testing outcomes.
+ - [2025-11-14 00:08 UTC] READ: data/dataset_prompt.md - Generative dataset prompt: detailed synthetic telemetry schema and rules for producing balanced benign/malicious JSONL scenarios for Phase 4.
 
+ - [2025-11-15 00:00 UTC] GENERATED: monitor/logs/synth/ - Synthetic telemetry scenarios created via `data.sample_generator.generate_dataset` (seed=2025). Files written for malicious/benign/unknown scenarios.
+ - [2025-11-15 00:00 UTC] RAN: models/train.py --quick --no-lstm - Quick baseline training completed. Dataset score: 10.0; Baseline model score: 9.3767. Artifacts saved under `models/artifacts`.
+ - [2025-11-15 12:00 UTC] INSTALLED: torch==2.3.1+cpu - Added CPU-only PyTorch to project venv for LSTM training.
+ - [2025-11-15 12:05 UTC] RAN: models/train.py - Full training regenerated dataset, RandomForest (score 9.44), and LSTM (score 10.0) with run-context features.
+ - [2025-11-15 12:07 UTC] RAN: models/evaluate.py --use-lstm - Verified baseline + LSTM performance summaries for logging.
+
+- [2025-11-15 10:04 UTC] ROLLBACK: Phase-4 ML Integration — Archived all Phase-4 files to backup_phase4_archive/ and uninstalled numpy, pandas, scikit-learn, joblib, torch from venv. Backup branch: backup/phase4-snapshot. Removed files: inference/ml_inference.py, data/{collector,labeler,sample_generator,sequences}.py, models/{train,evaluate}.py, models/artifacts/{meta.json,model.pkl,scaler.pkl,report.md,lstm.pt}, docs/ML_INTEGRATION.md, tests/test_inference.sh.
+
+---
+## Phase-3 Core C Reimplementation Analysis
+**Date**: 2025-11-16  
+**Branch**: feature/phase3-core-c
+
+### Python Module Analysis
+
+**resource_monitor.py** (246 lines):
+- Uses psutil for process sampling (CPU%, RSS, VMS, threads, open files, I/O)
+- Sample dataclass with to_dict() → JSONL event format
+- ProcessInspector class wraps psutil.Process
+- JSONL append functions with atomic writes
+- ISO timestamp generation
+- Key functions: collect_sample(), build_log_path(), format_command()
+
+**alert_manager.py** (224 lines):
+- AlertRecord dataclass with threshold metadata
+- Configurable thresholds (cpu_pct_high, rss_mb_high, duration_sec)
+- State tracking with threading.Lock for concurrent access
+- Alert deduplication and acknowledgment system
+- JSONL alert log output
+
+**log_rotate.py** (115 lines):
+- Keeps last N files (default 10)
+- Compression to .gz for old logs
+- Pattern matching for log file selection
+
+**prometheus_exporter.py** (112 lines):
+- Optional prometheus_client integration
+- Gauges: zencube_cpu_percent, zencube_rss_mb
+- HTTP server on port 9109
+- Thread-safe updates via Lock
+
+### C Implementation Requirements
+- /proc filesystem parsing (stat, status, fd/, io)
+- JSONL writing with cJSON library
+- Alert rule evaluation from JSON config
+- HTTP server for /metrics (lightweight, no heavy deps)
+- Signal handling (SIGINT, SIGTERM)
+- Atomic file operations
+
+---
+## GUI Integration Diagnosis (2025-11-16)
+**Task**: Fix 3 GUI integration issues (File Jail hang, Network status missing, Monitor graphs empty)
+
+### Files Read (6/6 complete)
+1. **zencube/zencube_modern_gui.py** (850 lines) - Main GUI coordination
+2. **gui/file_jail_panel.py** (436 lines) - File jail panel with QThread workers
+3. **gui/monitor_panel.py** (708 lines) - Monitoring dashboard with charts
+4. **gui/network_panel.py** (151 lines) - Network restriction controls
+5. **monitor/jail_wrapper.py** (229 lines) - Dev-safe jail wrapper (Python)
+6. **monitor/logs/*.jsonl** - Sample log files (Python and Core C formats)
+
+### Root Causes Identified
+
+**Issue 1: File Jail Hang**
+- Worker thread may exit without emitting signals on exception
+- No timeout watchdog for stuck operations
+- Button re-enable relies on signal emission (fails if worker crashes silently)
+- **Location**: gui/file_jail_panel.py:_JailRunWorker.run() (lines 73-103)
+
+**Issue 2: Network Status Missing**
+- Network panel has NO status tracking mechanism
+- Only updates UI text immediately on toggle
+- Doesn't poll for log files or execution results
+- Missing integration with main window execution signals
+- **Location**: gui/network_panel.py (entire file - 151 lines)
+
+**Issue 3: Monitor Graphs Empty**
+- Potential schema mismatch: Sample uses `memory_rss` but some logs use `rss_bytes`
+- GUI accesses `sample.memory_rss` without defensive checks
+- May fail silently if attribute doesn't exist
+- **Location**: gui/monitor_panel.py:_on_sample() (line 562)
+
+### Planned Fixes
+1. **File Jail**: Add try/except wrapper in _JailRunWorker.run(), add timeout watchdog
+2. **Network**: Add log polling mechanism, execution tracking, status file checks
+3. **Monitor**: Add schema adapter (support both memory_rss and rss_bytes), defensive attribute access
+4. **Debug**: Add file logging to monitor/logs/gui_debug.log
+
+### Test Scripts (to be created)
+- tests/test_gui_headless.sh - File jail button re-enable test
+- tests/test_gui_network_status.sh - Network status update test
+- tests/test_gui_monitor_graphs.sh - Monitor graph population test
+
+### Scoring Target
+- File Jail non-blocking: /3 pts
+- Network status updates: /3 pts  
+- Monitor plots updated: /4 pts
+- **Total**: /10 pts (≥9/10 required)
+
+**STATUS**: ⏸️ AWAITING USER CONFIRMATION (`CONFIRM GUI FIX` token required)

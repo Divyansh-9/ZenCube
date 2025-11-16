@@ -15,3 +15,6 @@ sandbox_jail_py_gui/
 
 # Misc
 *.log
+
+# Environment variables - never commit
+.env

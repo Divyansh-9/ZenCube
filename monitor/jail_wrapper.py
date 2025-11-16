@@ -17,6 +17,7 @@ import json
 import os
 import pathlib
 import re
+import signal
 import shutil
 import subprocess
 import sys
@@ -213,12 +214,16 @@ def run_command(args: argparse.Namespace) -> int:
         print(f"[jail-wrapper] Error: {exc}", file=sys.stderr)
         return 127
 
-    if strace_log is not None:
-        return_code = proc.wait()
-        violations = parse_strace_log(strace_log, jail_root)
-    else:
-        violations = monitor_with_proc_fd(proc, jail_root)
-        return_code = proc.wait()
+    try:
+        if strace_log is not None:
+            return_code = proc.wait()
+            violations = parse_strace_log(strace_log, jail_root)
+        else:
+            violations = monitor_with_proc_fd(proc, jail_root)
+            return_code = proc.wait()
+    finally:
+        pass
+
     log_entry["command_exit_code"] = return_code
     log_entry["violations"] = sorted(violations)
 
