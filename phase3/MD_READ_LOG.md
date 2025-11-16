@@ -118,3 +118,55 @@
 - HTTP server for /metrics (lightweight, no heavy deps)
 - Signal handling (SIGINT, SIGTERM)
 - Atomic file operations
+
+---
+## GUI Integration Diagnosis (2025-11-16)
+**Task**: Fix 3 GUI integration issues (File Jail hang, Network status missing, Monitor graphs empty)
+
+### Files Read (6/6 complete)
+1. **zencube/zencube_modern_gui.py** (850 lines) - Main GUI coordination
+2. **gui/file_jail_panel.py** (436 lines) - File jail panel with QThread workers
+3. **gui/monitor_panel.py** (708 lines) - Monitoring dashboard with charts
+4. **gui/network_panel.py** (151 lines) - Network restriction controls
+5. **monitor/jail_wrapper.py** (229 lines) - Dev-safe jail wrapper (Python)
+6. **monitor/logs/*.jsonl** - Sample log files (Python and Core C formats)
+
+### Root Causes Identified
+
+**Issue 1: File Jail Hang**
+- Worker thread may exit without emitting signals on exception
+- No timeout watchdog for stuck operations
+- Button re-enable relies on signal emission (fails if worker crashes silently)
+- **Location**: gui/file_jail_panel.py:_JailRunWorker.run() (lines 73-103)
+
+**Issue 2: Network Status Missing**
+- Network panel has NO status tracking mechanism
+- Only updates UI text immediately on toggle
+- Doesn't poll for log files or execution results
+- Missing integration with main window execution signals
+- **Location**: gui/network_panel.py (entire file - 151 lines)
+
+**Issue 3: Monitor Graphs Empty**
+- Potential schema mismatch: Sample uses `memory_rss` but some logs use `rss_bytes`
+- GUI accesses `sample.memory_rss` without defensive checks
+- May fail silently if attribute doesn't exist
+- **Location**: gui/monitor_panel.py:_on_sample() (line 562)
+
+### Planned Fixes
+1. **File Jail**: Add try/except wrapper in _JailRunWorker.run(), add timeout watchdog
+2. **Network**: Add log polling mechanism, execution tracking, status file checks
+3. **Monitor**: Add schema adapter (support both memory_rss and rss_bytes), defensive attribute access
+4. **Debug**: Add file logging to monitor/logs/gui_debug.log
+
+### Test Scripts (to be created)
+- tests/test_gui_headless.sh - File jail button re-enable test
+- tests/test_gui_network_status.sh - Network status update test
+- tests/test_gui_monitor_graphs.sh - Monitor graph population test
+
+### Scoring Target
+- File Jail non-blocking: /3 pts
+- Network status updates: /3 pts  
+- Monitor plots updated: /4 pts
+- **Total**: /10 pts (≥9/10 required)
+
+**STATUS**: ⏸️ AWAITING USER CONFIRMATION (`CONFIRM GUI FIX` token required)
