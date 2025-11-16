@@ -92,16 +92,21 @@ class _JailRunWorker(QThread):
             self.failed.emit(str(exc))
             return
 
-        log_path: Optional[str] = None
-        if proc.stdout is not None:
-            for line in proc.stdout:
-                text = line.rstrip()
-                if text:
-                    self.output.emit(text)
-                if "Log written to" in text:
-                    log_path = text.split("Log written to", 1)[-1].strip()
-        code = proc.wait()
-        self.finished.emit(code, log_path)
+        # Wrap entire monitoring loop to ensure signals always fire
+        try:
+            log_path: Optional[str] = None
+            if proc.stdout is not None:
+                for line in proc.stdout:
+                    text = line.rstrip()
+                    if text:
+                        self.output.emit(text)
+                    if "Log written to" in text:
+                        log_path = text.split("Log written to", 1)[-1].strip()
+            code = proc.wait()
+            self.finished.emit(code, log_path)
+        except Exception as exc:  # pragma: no cover - ensure button re-enables
+            self.failed.emit(f"Monitoring error: {exc}")
+            return
 
 
 class FileJailPanel(QWidget):
@@ -337,11 +342,19 @@ class FileJailPanel(QWidget):
     def _find_latest_log(self) -> Optional[Path]:
         if not LOG_DIR.exists():
             return None
-        logs = sorted(LOG_DIR.glob("jail_run_*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
-        return logs[0] if logs else None
+        # Support both .json (Python) and .jsonl (C) log files
+        json_logs = list(LOG_DIR.glob("jail_run_*.json"))
+        jsonl_logs = list(LOG_DIR.glob("jail_run_*.jsonl"))
+        all_logs = sorted(json_logs + jsonl_logs, key=lambda p: p.stat().st_mtime, reverse=True)
+        return all_logs[0] if all_logs else None
 
     def _summarise_log(self, log_path: str) -> Optional[str]:
         try:
+            # Check if it's a JSONL file (Core C monitoring logs)
+            if log_path.endswith('.jsonl'):
+                return self._summarise_jsonl_log(log_path)
+            
+            # Traditional JSON format (Python jail wrapper logs)
             with open(log_path, "r", encoding="utf-8") as handle:
                 data = json.load(handle)
         except (OSError, json.JSONDecodeError):
@@ -351,6 +364,34 @@ class FileJailPanel(QWidget):
         status = data.get("wrapper_exit_code")
         method = data.get("method")
         return "Summary → method: {} | exit: {} | violations: {}".format(method, status, len(violations))
+    
+    def _summarise_jsonl_log(self, log_path: str) -> Optional[str]:
+        """Summarize Core C monitoring logs (JSONL format)"""
+        try:
+            samples = 0
+            max_cpu = 0.0
+            max_memory = 0
+            exit_code = None
+            duration = 0.0
+            
+            with open(log_path, "r", encoding="utf-8") as handle:
+                for line in handle:
+                    if not line.strip():
+                        continue
+                    data = json.loads(line)
+                    
+                    if data.get("event") == "sample":
+                        samples += 1
+                        max_cpu = max(max_cpu, data.get("cpu_percent", 0))
+                        max_memory = max(max_memory, data.get("rss_bytes", 0))
+                    elif data.get("event") == "stop":
+                        exit_code = data.get("exit_code")
+                        duration = data.get("duration_seconds", 0.0)
+            
+            max_memory_mb = max_memory / (1024 * 1024)
+            return f"Summary → samples: {samples} | duration: {duration:.1f}s | max CPU: {max_cpu:.1f}% | max mem: {max_memory_mb:.1f}MB | exit: {exit_code}"
+        except (OSError, json.JSONDecodeError):
+            return None
 
     def _build_target_command(self) -> list[str]:
         getter = getattr(self._main_window, "get_effective_target_command", None)
