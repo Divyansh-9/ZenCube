@@ -213,8 +213,46 @@ def run_target(command: Sequence[str], logger: NetRestrictionLogger) -> None:
         script_path = pathlib.Path(entry)
         if not script_path.exists():
             raise FileNotFoundError(f"Target script not found: {script_path}")
-        sys.argv = [str(script_path), *tail]
-        runpy.run_path(str(script_path), run_name="__main__")
+        
+        # Check if this is a binary executable (not a Python script)
+        is_binary = False
+        try:
+            with open(script_path, 'rb') as f:
+                header = f.read(4)
+                # Check for ELF magic (Linux binary), Mach-O (macOS), or PE (Windows)
+                # Also check if file contains null bytes in first few KB
+                if header.startswith(b'\x7fELF') or header.startswith(b'\xcf\xfa') or header.startswith(b'MZ'):
+                    is_binary = True
+                else:
+                    # Check for null bytes in first 8KB
+                    f.seek(0)
+                    sample = f.read(8192)
+                    if b'\x00' in sample:
+                        is_binary = True
+        except Exception:
+            pass  # Assume it's a script if we can't read it
+        
+        if is_binary:
+            # For binary executables, we can't inject network blocking via runpy
+            # Use subprocess and rely on environment variable
+            import subprocess
+            env = os.environ.copy()
+            env["ZENCUBE_NET_DISABLED"] = "1"
+            
+            try:
+                result = subprocess.run(
+                    [str(script_path)] + tail,
+                    env=env,
+                    check=False
+                )
+                sys.exit(result.returncode)
+            except Exception as e:
+                logger.record_exception(e)
+                raise
+        else:
+            # Python script - use runpy
+            sys.argv = [str(script_path), *tail]
+            runpy.run_path(str(script_path), run_name="__main__")
 
 
 def main(argv: Sequence[str] | None = None) -> int:
