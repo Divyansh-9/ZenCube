@@ -3,18 +3,54 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+.pytest_cache/
+.coverage
+htmlcov/
 
 # Virtual environments
 .venv/
 venv/
+env/
+ENV/
 
 # Local jail outputs and logs
 monitor/logs/
 sandbox_jail/
 sandbox_jail_py_gui/
 
+# Large test files and outputs
+*.dat
+test_output.*
+*.tmp
+*.bak
+*.swp
+*~
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+*.so
+*.o
+*.a
+core_c/bin/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.sublime-*
+.DS_Store
+
+# Backup and archive files
+*.zip
+*.tar.gz
+*.tar.bz2
+*_backup/
+backup_*/
+
 # Misc
 *.log
 
 # Environment variables - never commit
 .env
+.env.local
